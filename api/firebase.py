@@ -58,11 +58,21 @@ def get_contributor(id: str):
     contributor['avatar'] = user['avatar']
     return contributor
 
-@ app.get("/building/{id}")
-def get_building(id: str):
-    building = app.database.buildings.find_one({"_id": ObjectId(id)}, {'_id': 0})
+def populate_contributors(building):
     building['contributors'] = list(map(get_contributor, building['contributors']))
     return building
+
+@ app.get("/buildings")
+def get_buildings():
+    buildings = app.database.buildings.find({}, {'_id': 0})
+    buildings = list(map(populate_contributors, buildings))
+    return buildings
+
+# @ app.get("/building/{id}")
+# def get_building(id: str):
+#     building = app.database.buildings.find_one({"_id": ObjectId(id)}, {'_id': 0})
+#     building = populate_contributors(building)
+#     return building
 
 @ app.get("/user/{uid}")
 def get_user(uid: str):
