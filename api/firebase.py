@@ -12,6 +12,10 @@ app = FastAPI()
 cred = credentials.Certificate("./config/config.json")
 firebase_admin.initialize_app(cred)
 
+def verify_id(id_token: str):
+    decoded_token = auth.verify_id_token(id_token)
+    uuid = decoded_token['uid']
+    return uuid
 
 @ app.get("/")
 def read_root():
@@ -26,12 +30,6 @@ def startup_db_client():
 @ app.on_event("shutdown")
 def shutdown_db_client():
     app.mongodb_client.close()
-
-@ app.get("/{id_token}")
-def verify_id(id_token: str):
-    decoded_token = auth.verify_id_token(id_token)
-    uuid = decoded_token['uid']
-    return uuid
 
 class CreateUserPostReq(BaseModel):
     uuid: str
@@ -51,46 +49,51 @@ def create_user(req: CreateUserPostReq):
     })
     return 1
 
-@ app.get("/user/{uuid}")
-def get_user(uuid: str):
+@ app.get("/user/{token}")
+def get_user(token: str):
+    uuid = verify_id(token)
     user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
     return user
 
-@ app.get("/friends/{uuid}")
-def get_friends(uuid: str):
+@ app.get("/friends/{token}")
+def get_friends(token: str):
+    uuid = verify_id(token)
     user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
     return list(map(get_user, user['friends']))
 
 class FriendsPostReq(BaseModel):
-    uuid: str
-    friendUuid: str
+    token: str
+    friendtoken: str
 
 @ app.post("/friends/add")
 def add_friend(req: FriendsPostReq):
-    user = app.database.users.find_one({"uuid": req.uuid}, {'_id': 0})
-    if req.friendUuid in user['friends']:
+    uuid = verify_id(req.token)
+    friendUuid = verify_id(req.friendtoken)
+    user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
+    if friendUuid in user['friends']:
         return 0
-    result = app.database.users.update_one({"uuid": req.uuid}, {"$push": {"friends": req.friendUuid}})
+    result = app.database.users.update_one({"uuid": uuid}, {"$push": {"friends": friendUuid}})
     return result.modified_count
 
 @ app.post("/friends/remove")
 def remove_friend(req: FriendsPostReq):
-    result = app.database.users.update_one({"uuid": req.uuid}, {"$pull": {"friends": req.friendUuid}})
+    uuid = verify_id(req.token)
+    friendUuid = verify_id(req.friendtoken)
+    result = app.database.users.update_one({"uuid": uuid}, {"$pull": {"friends": friendUuid}})
     return result.modified_count
 
 # ============================
 
 class Message(BaseModel):
-    uuid_one: str
-    uuid_two: str
+    token1: str
+    token2: str
     message: str
 
 # uuid1 to uuid2
 @ app.post("/send_message")
 def post_chat(message: Message):
-    
-    uuid1 = message.uuid_one
-    temp1, temp2 = sorted([message.uuid_one, message.uuid_two])
+    uuid1 = verify_id(message.token1)
+    temp1, temp2 = sorted([verify_id(message.token1), verify_id(message.token2)])
     message = message.message
 
     # from uuid1 to uuid2
@@ -98,9 +101,10 @@ def post_chat(message: Message):
     app.database.chats.update_one({"uuid1": temp1, "uuid2": temp2}, {"$push": {"log": [str(now), uuid1 == temp1, message]}}, upsert=True)
     return message
 
-@ app.get("/get_chat/{uuid1}/{uuid2}")
-def get_chat(uuid1: str, uuid2: str):
-    temp1, temp2 = sorted([uuid1, uuid2])
+@ app.get("/get_chat/{token1}/{token2}")
+def get_chat(token1: str, token2: str):
+    uuid1 = verify_id(token1)
+    temp1, temp2 = sorted([verify_id(token1), verify_id(token2)])
     chat = app.database.chats.find_one({"uuid1": temp1, "uuid2": temp2}, {'_id': 0})
     if uuid1 != temp1:
         chat['log'] = list(map(lambda x: [x[0], not x[1], x[2]], chat['log']))
