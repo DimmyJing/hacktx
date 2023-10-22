@@ -163,8 +163,8 @@ def post_chat(message: Message):
     return message
 
 
-@app.get("/get_chat/{token1}/{uid2}")
-def get_chat(token1: str, uid2: str):
+@app.get("/get_chat/{uid2}")
+def get_chat(uid2: str):
     uid1 = verify_id(token1)
     receiverUser = app.database.users.find_one({"uid": uid2}, {"_id": 0})
     temp1, temp2 = sorted([verify_id(token1), uid2])
