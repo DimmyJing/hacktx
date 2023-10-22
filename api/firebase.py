@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth
 from pydantic import BaseModel
@@ -10,6 +11,14 @@ from bson.objectid import ObjectId
 # among us
 config = dotenv_values(".env")
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 cred = credentials.Certificate("./config/config.json")
 firebase_admin.initialize_app(cred)
