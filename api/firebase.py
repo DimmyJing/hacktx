@@ -198,16 +198,12 @@ def get_chat(uid2: str, uid1=Depends(verify_user_token)):
                 chat["log"],
             )
         )
-    return (
-        {
-            "receiverAvatar": receiverUser["avatar"],
-            "receiverName": receiverUser["name"],
-            "receiverEmail": receiverUser["email"],
-            "chat": chat["log"] if chat else [],
-        }
-        if chat
-        else []
-    )
+    return {
+        "receiverAvatar": receiverUser["avatar"],
+        "receiverName": receiverUser["name"],
+        "receiverEmail": receiverUser["email"],
+        "chat": chat["log"] if chat else [],
+    }
 
 
 @app.get("/get_chats")

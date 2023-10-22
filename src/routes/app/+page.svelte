@@ -62,7 +62,7 @@
 				bind:this={locationRef}
 			>
 				{#each $buildingStore as building, idx}
-					<Building {building} bind:ref={locationRefs[idx]} />
+					<Building {building} {idx} bind:ref={locationRefs[idx]} />
 				{/each}
 			</div>
 		</div>

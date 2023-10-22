@@ -4,6 +4,7 @@
 
 	export let building: building;
 	export let ref: HTMLElement;
+	export let idx: number;
 </script>
 
 <div class="min-w-[calc(40vw-5rem-4px)] snap-center" bind:this={ref}>
@@ -22,5 +23,5 @@
 	<div class="relative">
 		<h1 class="absolute ml-4 text-3xl text-white -top-12">{building.name}</h1>
 	</div>
-	<Peoplelist contributors={building.contributors} />
+	<Peoplelist contributors={building.contributors} buildingIdx={idx} />
 </div>

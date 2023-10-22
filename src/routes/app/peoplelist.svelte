@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { buildingStore } from '$lib/utils/buildings';
+
 	export let contributors: {
 		uid: string;
 		name: string;
@@ -6,11 +8,33 @@
 		avatar: string;
 		activeHour: number;
 	}[];
+	export let buildingIdx: number;
+
+	let allContributors: {
+		uid: string;
+		name: string;
+		title: string;
+		avatar: string;
+		activeHour: number;
+	}[] = [];
+
+	$: if ($buildingStore && buildingIdx < $buildingStore.length) {
+		allContributors = [
+			...contributors,
+			{
+				uid: '' + buildingIdx,
+				name: $buildingStore[buildingIdx].name,
+				title: 'Architecture',
+				avatar: $buildingStore[buildingIdx].image,
+				activeHour: 0
+			}
+		];
+	}
 </script>
 
 <span class="ml-2 text-sm text-slate-600">CONTRIBUTORS - {contributors.length}</span>
 <ul class="bg-white divide-y divide-gray-100 shadow-sm ring-1 ring-gray-900/5">
-	{#each contributors as person}
+	{#each allContributors as person}
 		<li class="relative flex justify-between px-4 py-5 gap-x-6 hover:bg-gray-50 sm:px-6">
 			<div class="flex min-w-0 gap-x-4">
 				<img class="flex-none w-12 h-12 rounded-full bg-gray-50" src={person.avatar} alt="" />
