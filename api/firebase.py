@@ -4,12 +4,7 @@ from firebase_admin import credentials, auth
 from pydantic import BaseModel
 from pymongo import MongoClient
 from dotenv import dotenv_values
-<<<<<<< HEAD
 import datetime
-=======
-from pydantic import BaseModel
-
->>>>>>> 70f322793224a6d2285bd302de9ba7a2ba51bd3a
 # among us
 config = dotenv_values(".env")
 app = FastAPI()
@@ -21,6 +16,16 @@ firebase_admin.initialize_app(cred)
 @ app.get("/")
 def read_root():
     return {"Hello": "WBG wins"}
+
+@ app.on_event("startup")
+def startup_db_client():
+    app.mongodb_client = MongoClient(config["ATLAS_URI"])
+    app.database = app.mongodb_client[config["DB_NAME"]]
+    print("Connected to the MongoDB database!!")
+
+@ app.on_event("shutdown")
+def shutdown_db_client():
+    app.mongodb_client.close()
 
 @ app.get("/{id_token}")
 def verify_id(id_token: str):
@@ -59,15 +64,7 @@ def remove_friend(req: FriendsPostReq):
     result = app.database.users.update_one({"uuid": uuid}, {"$pull": {"friends": req.friendUuid}})
     return result.modified_count
 
-@ app.on_event("startup")
-def startup_db_client():
-    app.mongodb_client = MongoClient(config["ATLAS_URI"])
-    app.database = app.mongodb_client[config["DB_NAME"]]
-    print("Connected to the MongoDB database!!")
-
-@ app.on_event("shutdown")
-def shutdown_db_client():
-    app.mongodb_client.close()
+# ============================
 
 @ app.post("/make_user")
 def make_user(user: dict):
