@@ -4,6 +4,9 @@
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { auth, userStore } from '$lib/utils/firebase';
 	import { onNavigate } from '$app/navigation';
+	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+
+	const queryClient = new QueryClient();
 
 	onAuthStateChanged(auth, (user) => {
 		userStore.set(user);
@@ -23,4 +26,6 @@
 	});
 </script>
 
-<slot />
+<QueryClientProvider client={queryClient}>
+	<slot />
+</QueryClientProvider>

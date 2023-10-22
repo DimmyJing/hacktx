@@ -2,9 +2,21 @@
 	import Map from './map.svelte';
 	import Building from './building.svelte';
 	import { onMount } from 'svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import axios from 'axios';
+	import { buildingStore, type building } from '$lib/utils/buildings';
 
 	let locationIdx = 0;
 	let targetLocation = -1;
+
+	const query = createQuery({
+		queryKey: ['buildings'],
+		queryFn: () => axios.get<building[]>('http://localhost:8000/buildings')
+	});
+
+	$: if ($query.data?.data) {
+		buildingStore.set($query.data.data);
+	}
 
 	const locations: {
 		lng: number;

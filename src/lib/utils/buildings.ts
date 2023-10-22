@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-type building = {
+export type building = {
 	lng: number;
 	lat: number;
 	name: string;
