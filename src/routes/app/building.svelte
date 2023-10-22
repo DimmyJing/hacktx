@@ -24,6 +24,6 @@
 		<h1 class="absolute ml-4 text-3xl text-white -top-12">{building.name}</h1>
 	</div>
 	<span class="block m-4 text-lg">{building.significance}</span>
-	<span class="block mb-4 ml-4">Residents: {building.dailyActiveUsers}</span>
+	<span class="block mb-4 ml-4"><b>Residents:</b> {building.dailyActiveUsers}</span>
 	<Peoplelist contributors={building.contributors} buildingIdx={idx} />
 </div>
