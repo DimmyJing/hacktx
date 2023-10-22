@@ -37,7 +37,7 @@
 </div>
 
 {#if $query.isLoading}
-	<span>Loading...</span>
+	<span class="m-10 loading loading-infinity loading-lg" />
 {:else}
 	<div class="flex flex-col items-center w-full">
 		<div class="flex flex-col w-full max-w-3xl">

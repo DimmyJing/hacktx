@@ -149,7 +149,7 @@
 </script>
 
 {#if $query.isLoading && (!Number.isInteger(+id) || buildingVal === undefined)}
-	<span>Loading...</span>
+	<span class="m-10 loading loading-infinity loading-lg" />
 {:else}
 	<div class="flex flex-col items-center w-full h-full">
 		<div class="w-full max-w-3xl px-4 py-5 mb-4 bg-white border-b border-gray-200 sm:px-6">
