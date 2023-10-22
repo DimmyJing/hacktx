@@ -53,6 +53,14 @@
 			role: 'Director of Product',
 			onlineHour: 0,
 			userID: 'HIWQLA74eGa7CpQzJ0Up9SwIQqz1'
+		},
+		{
+			name: 'Welch Hall',
+			avatar:
+				'https://cdn.discordapp.com/attachments/1165122456000933919/1165415593760006216/AF1QipPC91wIbLsE-wNvRhZls8zHPuLng_n8QnN0ToDZw408-h306-k-no.png',
+			role: 'Building',
+			onlineHour: 0,
+			userID: 'HIWQLA74eGa7CpQzJ0Up9SwIQqz1'
 		}
 	];
 
