@@ -86,11 +86,11 @@ def post_chat(message: Message):
 
     # from uuid1 to uuid2
     now = datetime.datetime.now()
-    app.database.chats.update_one({"uuid1": temp1, "uuid2": temp2}, {"$push": {"log": [str(now), uuid1, message]}}, upsert=True)
+    app.database.chats.update_one({"uuid1": temp1, "uuid2": temp2}, {"$push": {"log": [str(now), uuid1 == temp1, message]}}, upsert=True)
     return message
 
 @ app.get("/get_chat/{uuid1}/{uuid2}")
 def get_chat(uuid1: str, uuid2: str):
     temp1, temp2 = sorted([uuid1, uuid2])
     chat = app.database.chats.find_one({"uuid1": temp1, "uuid2": temp2}, {'_id': 0})
-    return chat['log']
+    return chat['log'] if chat else []
