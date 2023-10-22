@@ -1,15 +1,11 @@
 <script lang="ts">
+	import type { building } from '$lib/utils/buildings';
 	import { Map, Marker } from 'mapbox-gl';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 
 	export let lng: number;
 	export let lat: number;
-	export let locations: {
-		lng: number;
-		lat: number;
-		name: string;
-		image: string;
-	}[];
+	export let buildings: building[];
 
 	const dispatch = createEventDispatcher();
 
@@ -26,7 +22,7 @@
 
 	$: {
 		if (map) {
-			for (const location of locations) {
+			for (const location of buildings) {
 				const el = document.createElement('img');
 				el.src =
 					'https://cdn.discordapp.com/attachments/1165122456000933919/1165421876596711465/Asset_22x.png';
