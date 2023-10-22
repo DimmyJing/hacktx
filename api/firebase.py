@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -24,10 +24,8 @@ cred = credentials.Certificate("./config/config.json")
 firebase_admin.initialize_app(cred)
 
 
-def verify_id(id_token: str):
-    decoded_token = auth.verify_id_token(id_token)
-    uid = decoded_token["uid"]
-    return uid
+def verify_user_token(req: Request) -> str:
+    return auth.verify_id_token(req.headers["Authorization"].split(" ")[1])["uid"]
 
 
 @app.get("/")
@@ -96,27 +94,24 @@ def get_buildings():
 #     return building
 
 
-@app.get("/user/{uid}")
-def get_user(uid: str):
+@app.get("/user")
+def get_user(uid=Depends(verify_user_token)):
     user = app.database.users.find_one({"uid": uid}, {"_id": 0})
     return user
 
 
-@app.get("/friends/{token}")
-def get_friends(token: str):
-    uid = verify_id(token)
+@app.get("/friends")
+def get_friends(uid=Depends(verify_user_token)):
     user = app.database.users.find_one({"uid": uid}, {"_id": 0})
     return list(map(get_user, user["friends"]))
 
 
 class FriendsPostReq(BaseModel):
-    token: str
     friendUid: str
 
 
 @app.post("/friends/add")
-def add_friend(req: FriendsPostReq):
-    uid = verify_id(req.token)
+def add_friend(req: FriendsPostReq, uid=Depends(verify_user_token)):
     user = app.database.users.find_one({"uid": uid}, {"_id": 0})
     if req.friendUid in user["friends"]:
         return 0
@@ -127,8 +122,7 @@ def add_friend(req: FriendsPostReq):
 
 
 @app.post("/friends/remove")
-def remove_friend(req: FriendsPostReq):
-    uid = verify_id(req.token)
+def remove_friend(req: FriendsPostReq, uid=Depends(verify_user_token)):
     result = app.database.users.update_one(
         {"uid": uid}, {"$pull": {"friends": req.friendUid}}
     )
@@ -139,16 +133,14 @@ def remove_friend(req: FriendsPostReq):
 
 
 class Message(BaseModel):
-    token1: str
     uid2: str
     message: str
 
 
 # uid1 to uid2
 @app.post("/send_message")
-def post_chat(message: Message):
-    uid1 = verify_id(message.token1)
-    temp1, temp2 = sorted([verify_id(message.token1), message.uid2])
+def post_chat(message: Message, uid1=Depends(verify_user_token)):
+    temp1, temp2 = sorted([uid1, message.uid2])
     print(temp1)
     print(temp2)
     message = message.message
@@ -164,10 +156,9 @@ def post_chat(message: Message):
 
 
 @app.get("/get_chat/{uid2}")
-def get_chat(uid2: str):
-    uid1 = verify_id(token1)
+def get_chat(uid2: str, uid1=Depends(verify_user_token)):
     receiverUser = app.database.users.find_one({"uid": uid2}, {"_id": 0})
-    temp1, temp2 = sorted([verify_id(token1), uid2])
+    temp1, temp2 = sorted([uid1, uid2])
 
     chat = app.database.chats.find_one({"uid1": temp1, "uid2": temp2}, {"_id": 0})
     print(chat)
@@ -191,9 +182,8 @@ def get_chat(uid2: str):
     )
 
 
-@app.get("/get_chats/{token}")
-def get_chats(token: str):
-    uid = verify_id(token)
+@app.get("/get_chats")
+def get_chats(uid=Depends(verify_user_token)):
     chats = list(
         app.database.chats.find({"$or": [{"uid1": uid}, {"uid2": uid}]}, {"_id": 0})
     )
