@@ -38,7 +38,9 @@
 </div>
 
 {#if $query.isLoading}
-	<span class="m-10 loading loading-infinity loading-lg" />
+	<div class="flex items-center justify-center w-full h-full">
+		<span class="m-14 loading loading-infinity loading-lg" />
+	</div>
 {:else}
 	<div class="flex flex-col items-center w-full">
 		<div class="flex flex-col w-full max-w-3xl">
@@ -66,7 +68,14 @@
 				</div>
 			</dl>
 
-			<button class="mt-4 btn btn-outline btn-error" on:click={onLogOut}>Log Out</button>
+			<h1 class="mt-8 mb-2 text-3xl">Feedback</h1>
+			<div class="flex flex-col divide-y gap-y-2">
+				{#each $query.data?.data.positiveComments ?? [] as comment}
+					<span class="block pt-2 text-lg font-light">{comment}</span>
+				{/each}
+			</div>
+
+			<button class="mt-16 btn btn-outline btn-error" on:click={onLogOut}>Log Out</button>
 		</div>
 	</div>
 {/if}

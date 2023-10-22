@@ -107,20 +107,23 @@ all_comments = [
     "Passionate about construction and always eager to take on new projects and challenges.",
 ]
 
+
 @app.get("/profile")
 def get_profile(uid=Depends(verify_user_token)):
     # user = app.database.users.find_one({"uid": uid}, {"_id": 0})
-    numBuildings = app.database.contributions.find({uid: uid}, {"_id": 0}).count()
+    # numBuildings = len(list(app.database.contributions.find({uid: uid})))
+    numBuildings = random.randint(10, 50)
     random.seed(uid)
     collectiveOccupancyDays = random.randint(10000, 100000)
     predictedHomelessnessPrevented = random.randint(50, 1500)
     positiveComments = random.sample(all_comments, 3)
     return {
-        numBuildings: numBuildings,
-        collectiveOccupancyDays: collectiveOccupancyDays,
-        predictedHomelessnessPrevented: predictedHomelessnessPrevented, 
-        positiveComments: positiveComments
+        "numBuildings": numBuildings,
+        "collectiveOccupancyDays": collectiveOccupancyDays,
+        "predictedHomelessnessPrevented": predictedHomelessnessPrevented,
+        "positiveComments": positiveComments,
     }
+
 
 @app.get("/user")
 def get_user(uid=Depends(verify_user_token)):
