@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 from dotenv import dotenv_values
 import datetime
+from bson.objectid import ObjectId
+
 # among us
 config = dotenv_values(".env")
 app = FastAPI()
@@ -49,9 +51,31 @@ def create_user(req: CreateUserPostReq):
     })
     return 1
 
-@ app.get("/user/{token}")
-def get_user(token: str):
-    uid = verify_id(token)
+def get_contributor(id: str):
+    contributor = app.database.contributors.find_one({"_id": ObjectId(id)}, {'_id': 0})
+    user = get_user(contributor['uid'])
+    contributor['name'] = user['name']
+    contributor['avatar'] = user['avatar']
+    return contributor
+
+def populate_contributors(building):
+    building['contributors'] = list(map(get_contributor, building['contributors']))
+    return building
+
+@ app.get("/buildings")
+def get_buildings():
+    buildings = app.database.buildings.find({}, {'_id': 0})
+    buildings = list(map(populate_contributors, buildings))
+    return buildings
+
+# @ app.get("/building/{id}")
+# def get_building(id: str):
+#     building = app.database.buildings.find_one({"_id": ObjectId(id)}, {'_id': 0})
+#     building = populate_contributors(building)
+#     return building
+
+@ app.get("/user/{uid}")
+def get_user(uid: str):
     user = app.database.users.find_one({"uid": uid}, {'_id': 0})
     return user
 
@@ -63,23 +87,21 @@ def get_friends(token: str):
 
 class FriendsPostReq(BaseModel):
     token: str
-    friendtoken: str
+    friendUid: str
 
 @ app.post("/friends/add")
 def add_friend(req: FriendsPostReq):
     uid = verify_id(req.token)
-    frienduid = verify_id(req.friendtoken)
     user = app.database.users.find_one({"uid": uid}, {'_id': 0})
-    if frienduid in user['friends']:
+    if req.friendUid in user['friends']:
         return 0
-    result = app.database.users.update_one({"uid": uid}, {"$push": {"friends": frienduid}})
+    result = app.database.users.update_one({"uid": uid}, {"$push": {"friends": req.friendUid}})
     return result.modified_count
 
 @ app.post("/friends/remove")
 def remove_friend(req: FriendsPostReq):
     uid = verify_id(req.token)
-    frienduid = verify_id(req.friendtoken)
-    result = app.database.users.update_one({"uid": uid}, {"$pull": {"friends": frienduid}})
+    result = app.database.users.update_one({"uid": uid}, {"$pull": {"friends": req.friendUid}})
     return result.modified_count
 
 # ============================
