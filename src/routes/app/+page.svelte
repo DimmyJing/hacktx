@@ -5,13 +5,14 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import axios from 'axios';
 	import { buildingStore, type building } from '$lib/utils/buildings';
+	import { baseURL } from '$lib/utils/constants';
 
 	let locationIdx = 0;
 	let targetLocation = -1;
 
 	const query = createQuery({
 		queryKey: ['buildings'],
-		queryFn: () => axios.get<building[]>('http://localhost:8000/buildings')
+		queryFn: () => axios.get<building[]>(baseURL + 'buildings')
 	});
 
 	$: if ($query.data?.data) {

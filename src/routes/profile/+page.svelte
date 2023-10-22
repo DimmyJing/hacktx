@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Appicon from '$lib/components/appicon.svelte';
+	import { baseURL } from '$lib/utils/constants';
 	import { auth, userStore } from '$lib/utils/firebase';
 	import { createQuery } from '@tanstack/svelte-query';
 	import axios from 'axios';
@@ -18,7 +19,7 @@
 				collectiveOccupancyDays: number;
 				predictedHomelessnessPrevented: number;
 				positiveComments: string[];
-			}>('http://localhost:8000/profile', {
+			}>(baseURL + 'profile', {
 				headers: {
 					Authorization: 'Bearer ' + idToken
 				}

@@ -7,6 +7,7 @@
 	import { auth } from '$lib/utils/firebase';
 	import { getIdToken } from 'firebase/auth';
 	import { onDestroy } from 'svelte';
+	import { baseURL } from '$lib/utils/constants';
 	export let data: PageData;
 	$: id = data.id;
 
@@ -18,7 +19,7 @@
 
 	const buildingQuery = createQuery({
 		queryKey: ['buildings'],
-		queryFn: () => axios.get<building[]>('http://localhost:8000/buildings')
+		queryFn: () => axios.get<building[]>(baseURL + 'buildings')
 	});
 
 	$: if ($buildingQuery.data?.data) {
@@ -55,7 +56,7 @@
 				receiverName: string;
 				receiverEmail: string;
 				chat: { text: string; user: boolean }[];
-			}>('http://localhost:8000/get_chat/' + id, {
+			}>(baseURL + 'get_chat/' + id, {
 				headers: {
 					Authorization: 'Bearer ' + token
 				}
@@ -68,7 +69,7 @@
 		mutationFn: async (message: string) => {
 			const token = await getIdToken(auth.currentUser!);
 			return axios.post(
-				'http://localhost:8000/send_message',
+				baseURL + 'send_message',
 				{ uid2: id, message },
 				{
 					headers: {
