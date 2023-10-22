@@ -1,2 +1,4 @@
 fastapi==0.104.0
-uvicorn==0.23.2
+firebase_admin==6.2.0
+pymongo==4.5.0
+python-dotenv==1.0.0
