@@ -31,8 +31,6 @@ def shutdown_db_client():
 def verify_id(id_token: str):
     decoded_token = auth.verify_id_token(id_token)
     uuid = decoded_token['uid']
-    # upsert to the database with the user info
-    # update the last login time
     return uuid
 
 @ app.get("/user/{uuid}")
@@ -66,11 +64,6 @@ def remove_friend(req: FriendsPostReq):
 
 # ============================
 
-@ app.post("/make_user")
-def make_user(user: dict):
-    app.database.users.insert_one(user)
-    return user
-
 class Message(BaseModel):
     uuid_one: str
     uuid_two: str
@@ -93,4 +86,6 @@ def post_chat(message: Message):
 def get_chat(uuid1: str, uuid2: str):
     temp1, temp2 = sorted([uuid1, uuid2])
     chat = app.database.chats.find_one({"uuid1": temp1, "uuid2": temp2}, {'_id': 0})
+    if uuid1 != temp1:
+        chat['log'] = list(map(lambda x: [x[0], not x[1], x[2]], chat['log']))
     return chat['log'] if chat else []
