@@ -26,6 +26,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Build Together</title>
+</svelte:head>
+
 <QueryClientProvider client={queryClient}>
 	<slot />
 </QueryClientProvider>
