@@ -37,6 +37,7 @@ class CreateUserPostReq(BaseModel):
     uuid: str
     name: str
     email: str
+    avatar: str
 
 @ app.post("/create-user")
 def create_user(req: CreateUserPostReq):
@@ -45,6 +46,7 @@ def create_user(req: CreateUserPostReq):
         "lastLogin": datetime.datetime.now(),
         "name": req.name,
         "email": req.email,
+        "avatar": req.avatar,
         "friends": []
     })
     return 1
