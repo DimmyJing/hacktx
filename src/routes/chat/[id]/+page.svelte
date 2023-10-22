@@ -1,9 +1,28 @@
 <script lang="ts">
-	import { getIdToken } from 'firebase/auth';
+	import { buildingStore } from '$lib/utils/buildings';
+	import OpenAI from 'openai';
 	import type { PageData } from './$types';
-	import { userStore } from '$lib/utils/firebase';
 	export let data: PageData;
 	$: id = data.id;
+
+	const openAI = new OpenAI({
+		apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+		dangerouslyAllowBrowser: true
+	});
+
+	let useOpenAI = false;
+	let systemPrompt = '';
+
+	if (Number.isInteger(id)) {
+		const building = $buildingStore[+id];
+
+		useOpenAI = true;
+		systemPrompt +=
+			'You are the famous building ' +
+			building.name +
+			". You are to have an accurate and interesting conversation with the user as this building mimicing their mannerisms to the tee. Here is a basic summary of the building you're playing as: " +
+			building.significance;
+	}
 
 	const avatar =
 		'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
@@ -13,12 +32,32 @@
 	let messages: {
 		user: boolean;
 		text: string;
-	}[] = [
-		{ user: true, text: 'hello' },
-		{ user: false, text: 'hi' },
-		{ user: true, text: 'hello' },
-		{ user: false, text: 'hi' }
-	];
+	}[] = [];
+
+	async function getOpenAIResponse() {
+		const openAIMessages = messages.map((message) => ({
+			role: message.user ? ('user' as const) : ('assistant' as const),
+			content: message.text
+		}));
+		const requestMessages = [{ role: 'system' as const, content: systemPrompt }, ...openAIMessages];
+		const stream = await openAI.chat.completions.create({
+			messages: requestMessages,
+			model: 'gpt-4-32k',
+			stream: true
+		});
+		messages.push({ user: false, text: '' });
+		for await (const part of stream) {
+			messages[messages.length - 1].text += part.choices[0].delta.content || '';
+			messages = messages;
+		}
+	}
+
+	function sendMessage() {
+		messages.push({ user: true, text: messageValue });
+		messages = messages;
+		messageValue = '';
+		getOpenAIResponse();
+	}
 </script>
 
 <div class="flex flex-col items-center w-full h-full">
@@ -43,11 +82,7 @@
 				</a>
 				<div class="flex items-center">
 					<div class="flex-shrink-0">
-						<img
-							class="w-12 h-12 rounded-full"
-							src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-							alt=""
-						/>
+						<img class="w-12 h-12 rounded-full" src={avatar} alt="" />
 					</div>
 					<h3 class="ml-4 text-base font-semibold leading-6 text-gray-900">Tom Cook</h3>
 				</div>
@@ -96,7 +131,7 @@
 			class="w-full m-4 input input-bordered"
 			bind:value={messageValue}
 		/>
-		<button class="btn btn-circle btn-outline">
+		<button class="btn btn-circle btn-outline" on:click={sendMessage}>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
