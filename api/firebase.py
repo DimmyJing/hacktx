@@ -125,22 +125,48 @@ class Message(BaseModel):
 def post_chat(message: Message):
     uid1 = verify_id(message.token1)
     temp1, temp2 = sorted([verify_id(message.token1), message.uid2])
+    print(temp1)
+    print(temp2)
     message = message.message
 
     # from uid1 to uid2
     now = datetime.datetime.now()
-    app.database.chats.update_one({"uid1": temp1, "uid2": temp2}, {"$push": {"log": [str(now), uid1 == temp1, message]}}, upsert=True)
+    app.database.chats.update_one({"uid1": temp1, "uid2": temp2}, {"$push": {"log": {'text': message, 'user': uid1 == temp1, 'time': now}}}, upsert=True)
     return message
 
 @ app.get("/get_chat/{token1}/{uid2}")
 def get_chat(token1: str, uid2: str):
     uid1 = verify_id(token1)
+    receiverUser = app.database.users.find_one({"uid": uid2}, {'_id': 0})
     temp1, temp2 = sorted([verify_id(token1), uid2])
-    print(temp1 + 'temp1')
-    print(temp2 + 'temp2')
+    
     chat = app.database.chats.find_one({"uid1": temp1, "uid2": temp2}, {'_id': 0})
     print(chat)
-    if uid1 != temp1:
-        chat['log'] = list(map(lambda x: [x[0], not x[1], x[2]], chat['log']))
-    return chat['log'] if chat else []
+    if uid1 != temp1 and chat:
+        # chat['log'] = list(map(lambda x: [x[0], not x[1], x[2]], chat['log']))
+        chat['log'] = list(map(lambda x: {'text': x['text'], 'user': not x['user'], 'time': x['time']}, chat['log']))
+    return {'receiverAvatar': receiverUser['avatar'], 'receiverName': receiverUser['name'], 'receiverEmail': receiverUser['email'], 'chat': chat['log'] if chat else []} if chat else []
 
+@ app.get("/get_chats/{token}")
+def get_chats(token: str):
+    uid = verify_id(token)
+    chats = list(app.database.chats.find({"$or": [{"uid1": uid}, {"uid2": uid}]}, {'_id': 0}))
+    # get last message from each chat
+    chats = list(map(lambda x: [x['uid1'], x['uid2'], x['log'][-1]], chats))
+    # sort by time
+    chats.sort(key=lambda x: x[2]['time'], reverse=True)
+    res = []
+    # add name and avatar for each chat 
+    for chat in chats:
+        if chat[0] == uid:
+            user = app.database.users.find_one({"uid": chat[1]}, {'_id': 0})
+            res.append([user['avatar'], user['name'], chat[1], chat[2]])
+        else:
+            user = app.database.users.find_one({"uid": chat[0]}, {'_id': 0})
+            res.append([user['avatar'], user['name'], chat[0], chat[2]])
+    return res
+
+# @ app.get("/get_profile/{token}")
+# def get_profile(token: str):
+#     uid = verify_id(token)
+    
