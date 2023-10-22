@@ -44,22 +44,20 @@ def get_friends(uuid: str):
     return list(map(get_user, user['friends']))
 
 class FriendsPostReq(BaseModel):
-    idToken: str
+    uuid: str
     friendUuid: str
 
 @ app.post("/friends/add")
 def add_friend(req: FriendsPostReq):
-    uuid = verify_id(req.idToken)
-    user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
+    user = app.database.users.find_one({"uuid": req.uuid}, {'_id': 0})
     if req.friendUuid in user['friends']:
         return 0
-    result = app.database.users.update_one({"uuid": uuid}, {"$push": {"friends": req.friendUuid}})
+    result = app.database.users.update_one({"uuid": req.uuid}, {"$push": {"friends": req.friendUuid}})
     return result.modified_count
 
 @ app.post("/friends/remove")
 def remove_friend(req: FriendsPostReq):
-    uuid = verify_id(req.idToken)
-    result = app.database.users.update_one({"uuid": uuid}, {"$pull": {"friends": req.friendUuid}})
+    result = app.database.users.update_one({"uuid": req.uuid}, {"$pull": {"friends": req.friendUuid}})
     return result.modified_count
 
 # ============================
