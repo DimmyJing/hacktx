@@ -46,7 +46,7 @@
 </script>
 
 {#if $query.isLoading}
-	<span class="m-10 loading loading-infinity loading-lg" />
+	<span class="mt-40 ml-16 loading loading-infinity loading-lg" />
 {:else}
 	<div class="flex flex-row w-screen h-screen">
 		<Map
