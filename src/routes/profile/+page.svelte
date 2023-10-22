@@ -43,7 +43,7 @@
 	</div>
 {:else}
 	<div class="flex flex-col items-center w-full">
-		<div class="flex flex-col w-full max-w-3xl">
+		<div class="flex flex-col w-full max-w-4xl">
 			<h1 class="w-full text-4xl">Hi {displayName}!</h1>
 			<dl class="grid grid-cols-1 gap-5 mt-5 sm:grid-cols-3">
 				<div class="px-4 py-5 overflow-hidden rounded-lg shadow bg-slate-100 sm:p-6">
@@ -71,7 +71,7 @@
 			<h1 class="mt-8 mb-2 text-3xl">Feedback</h1>
 			<div class="flex flex-col divide-y gap-y-2">
 				{#each $query.data?.data.positiveComments ?? [] as comment}
-					<span class="block pt-2 text-lg font-light">{comment}</span>
+					<span class="block pt-2 text-lg font-light">⭐ {comment}</span>
 				{/each}
 			</div>
 
