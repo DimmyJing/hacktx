@@ -6,6 +6,7 @@
 	import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 	import { auth } from '$lib/utils/firebase';
 	import { getIdToken } from 'firebase/auth';
+	import { onDestroy } from 'svelte';
 	export let data: PageData;
 	$: id = data.id;
 
@@ -139,6 +140,10 @@
 			behavior: 'smooth'
 		});
 	}
+
+	onDestroy(() => {
+		messages = [];
+	});
 
 	let stopperRef: HTMLDivElement;
 </script>
