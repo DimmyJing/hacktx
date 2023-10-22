@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from dotenv import dotenv_values
 import datetime
 from bson.objectid import ObjectId
+import random
 
 # among us
 config = dotenv_values(".env")
@@ -93,6 +94,33 @@ def get_buildings():
 #     building = populate_contributors(building)
 #     return building
 
+all_comments = [
+    "Dedicated and skilled construction worker with a passion for quality craftsmanship.",
+    "Reliable and hardworking team player, committed to completing projects on time and on budget.",
+    "Demonstrates exceptional attention to detail, ensuring precision in every aspect of the construction process.",
+    "Strong problem-solving abilities and adaptability, able to tackle challenges head-on.",
+    "Safety-conscious professional who consistently follows industry best practices.",
+    "Brings a positive attitude to the job site, fostering a collaborative and productive work environment.",
+    "Experienced in various construction tasks, from foundation to finishing touches.",
+    "Adept at using a wide range of tools and equipment to achieve project goals efficiently.",
+    "Consistently receives praise from clients for outstanding workmanship and service.",
+    "Passionate about construction and always eager to take on new projects and challenges.",
+]
+
+@app.get("/profile")
+def get_profile(uid=Depends(verify_user_token)):
+    # user = app.database.users.find_one({"uid": uid}, {"_id": 0})
+    numBuildings = app.database.contributions.find({uid: uid}, {"_id": 0}).count()
+    random.seed(uid)
+    collectiveOccupancyDays = random.randint(10000, 100000)
+    predictedHomelessnessPrevented = random.randint(50, 1500)
+    positiveComments = random.sample(all_comments, 3)
+    return {
+        numBuildings: numBuildings,
+        collectiveOccupancyDays: collectiveOccupancyDays,
+        predictedHomelessnessPrevented: predictedHomelessnessPrevented, 
+        positiveComments: positiveComments
+    }
 
 @app.get("/user")
 def get_user(uid=Depends(verify_user_token)):
