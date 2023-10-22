@@ -2,13 +2,13 @@
 	import Appicon from '$lib/components/appicon.svelte';
 </script>
 
-<div class="min-h-screen bg-neutral">
+<div class="min-h-screen overflow-y-hidden bg-neutral">
 	<header class="absolute inset-x-0 top-0 z-50">
 		<nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
 			<div class="flex lg:flex-1">
 				<Appicon fillColor="#f9d72f" />
 			</div>
-			<div>
+			<div class="flex flex-row gap-x-2">
 				<a href="/auth/login" class="btn btn-primary btn-outline">Log In</a>
 				<a href="/auth/signup" class="btn btn-secondary btn-outline">Sign up</a>
 			</div>
