@@ -33,6 +33,22 @@ def verify_id(id_token: str):
     uuid = decoded_token['uid']
     return uuid
 
+class CreateUserPostReq(BaseModel):
+    uuid: str
+    name: str
+    email: str
+
+@ app.post("/create-user")
+def create_user(req: CreateUserPostReq):
+    app.database.users.insert_one({
+        "uuid": req.uuid,
+        "lastLogin": datetime.datetime.now(),
+        "name": req.name,
+        "email": req.email,
+        "friends": []
+    })
+    return 1
+
 @ app.get("/user/{uuid}")
 def get_user(uuid: str):
     user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
