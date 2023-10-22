@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 import firebase_admin
 from firebase_admin import credentials, auth
+from pydantic import BaseModel
 from pymongo import MongoClient
 from dotenv import dotenv_values
+import datetime
 # among us
 config = dotenv_values(".env")
 app = FastAPI()
@@ -14,7 +16,6 @@ firebase_admin.initialize_app(cred)
 @ app.get("/")
 def read_root():
     return {"Hello": "WBG wins"}
-
 
 @ app.get("/{id_token}")
 def verify_id(id_token: str):
@@ -34,8 +35,6 @@ def get_friends(uuid: str):
     user = app.database.users.find_one({"uuid": uuid}, {'_id': 0})
     return list(map(get_user, user['friends']))
 
-
-
 @ app.on_event("startup")
 def startup_db_client():
     app.mongodb_client = MongoClient(config["ATLAS_URI"])
@@ -46,4 +45,31 @@ def startup_db_client():
 def shutdown_db_client():
     app.mongodb_client.close()
 
-@ app.get("/")
+@ app.post("/make_user")
+def make_user(user: dict):
+    app.database.users.insert_one(user)
+    return user
+
+class Message(BaseModel):
+    uuid_one: str
+    uuid_two: str
+    message: str
+
+# uuid1 to uuid2
+@ app.post("/send_message")
+def post_chat(message: Message):
+    
+    uuid1 = message.uuid_one
+    temp1, temp2 = sorted([message.uuid_one, message.uuid_two])
+    message = message.message
+
+    # from uuid1 to uuid2
+    now = datetime.datetime.now()
+    app.database.chats.update_one({"uuid1": temp1, "uuid2": temp2}, {"$push": {"log": [str(now), uuid1, message]}}, upsert=True)
+    return message
+
+@ app.get("/get_chat/{uuid1}/{uuid2}")
+def get_chat(uuid1: str, uuid2: str):
+    temp1, temp2 = sorted([uuid1, uuid2])
+    chat = app.database.chats.find_one({"uuid1": temp1, "uuid2": temp2}, {'_id': 0})
+    return chat['log']
